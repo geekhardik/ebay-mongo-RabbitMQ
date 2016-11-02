@@ -301,7 +301,30 @@ router.post('/login_time', function(req, res, next) {
 	logger.log('info','inside /login_time post method!');
 	if(req.session.user){
 		
-		mongo.connect(mongoURL, function(){
+		var msg_payload = { "user_id": req.session.user.user_id};
+		mq_client.make_request('logintime_queue',msg_payload, function(err,results){
+			
+			console.log(results);
+			if(err){
+				throw err;
+			}
+			else 
+			{
+				if(results.code == 200){
+					logger.log('info','updated last_loggedin time as');
+				}
+				else {    
+					
+					logger.log('info','could not update last visited time');
+				}
+				console.log(results.last_visited);
+				res.send({"time" : results.last_visited});
+
+			}  
+		});
+
+
+		/*mongo.connect(mongoURL, function(){
 			console.log('Connected to mongo at: ' + mongoURL);
 			var coll = mongo.collection('last_login');
 			coll.findOne({"user_id": req.session.user.user_id}, function(err, log_in){
@@ -320,7 +343,7 @@ router.post('/login_time', function(req, res, next) {
 					res.send({"time" : log_in.last_visited});
 				}
 			});	
-		});
+		});*/
 	}
 	else{
 		res.send({"time" : null});
@@ -713,7 +736,7 @@ router.post('/sell', function(req, res, next) {
 	logger.log('info','inside /sell post');
 	if(!req.session.user){
 		json_responses = {"statusCode" : 401};
-				res.send(json_responses);
+		res.send(json_responses);
 		
 	}else{
 		
@@ -730,37 +753,29 @@ router.post('/sell', function(req, res, next) {
 		"qty" : req.body.qty,
 		"duration" : req.body.duration,
 		"location" : req.body.location,
+		"time" : Date()
 		};
 	
 	
-		mongo.connect(mongoURL, function(){
-			console.log('Connected to mongo at: ' + mongoURL);
-			var coll = mongo.collection('sell');
-
-			coll.insert(JSON_query, function(err, results){
-				if (err) {
-				throw err;
-			} else {
-				if (results) {
-					logger.log('info','items were inserted in sell table successfully');
-
-					//bidding code should go here!
-
-					var json_responses = {
-						"statusCode" : 200
-					};
-					res.send(json_responses);
-				} else {
-					logger.log('info','items could not be inserted in sell table');
-					 json_responses = {
-						"statusCode" : 401
-					};
-					res.send(json_responses);
-				}
+		mq_client.make_request('sell_queue',JSON_query, function(err,results){
+		
+		console.log(results);
+		if(err){
+			throw err;
+		}
+		else 
+		{
+			if(results.code == 200){
+				logger.log('info','items were inserted in sell table successfully');
+				res.send({"statusCode" : 200});
 			}
-			
-			});
-		});
+			else {    				
+				logger.log('info','signin was failed');
+				res.send({"statusCode" : 401});
+			}
+		}  
+	});
+
 	}
 
 /*

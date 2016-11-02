@@ -57,27 +57,6 @@ function handle_request(msg, callback){
 	// console.log(res.info);
 	
 	});
-
-
-
-/*
-	mongo.connect(mongoURL, function(){
-	console.log('Connected to mongo at: ' + mongoURL);
-	var coll = mongo.collection('sell');
-	
-	coll.findOne(msg, function(err,results){
-			if (results) {
-				logger.log('info','user information retrival is successful');
-				res.info = results;
-				res.code = "200";
-			} else {
-				logger.log('info','user information query was failed');
-				res.code = "401";	
-				res.info = "null";			
-			}
-			callback(null, res);
-		});
-	});	*/
 }
 
 exports.handle_request = handle_request;
