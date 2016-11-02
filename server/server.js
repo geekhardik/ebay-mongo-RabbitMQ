@@ -12,6 +12,7 @@ var getuser = require('./services/getuser');
 var catalouge = require('./services/catalouge');
 var sell = require('./services/sell');
 var logintime = require('./services/logintime');
+var item = require('./services/item');
 
 var cnn = amqp.createConnection({host:'127.0.0.1'});
 
@@ -127,6 +128,26 @@ cnn.on('ready', function(){
 			util.log("Message: "+JSON.stringify(message));
 			util.log("DeliveryInfo: "+JSON.stringify(deliveryInfo));
 			logintime.handle_request(message, function(err,res){
+				console.log("sending response of server is : "+ res.code);
+				//return index sent
+				cnn.publish(m.replyTo, res, {
+					contentEncoding:'utf-8',
+					contentType:'application/json',
+					correlationId:m.correlationId
+				});
+			});
+		});
+	});
+});
+
+cnn.on('ready', function(){
+	console.log("listening on item_queue");
+	cnn.queue('item_queue', function(q){
+		q.subscribe(function(message, headers, deliveryInfo, m){
+			util.log(util.format( deliveryInfo.routingKey, message));
+			util.log("Message: "+JSON.stringify(message));
+			util.log("DeliveryInfo: "+JSON.stringify(deliveryInfo));
+			item.handle_request(message, function(err,res){
 				console.log("sending response of server is : "+ res.code);
 				//return index sent
 				cnn.publish(m.replyTo, res, {

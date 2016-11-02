@@ -321,29 +321,7 @@ router.post('/login_time', function(req, res, next) {
 				res.send({"time" : results.last_visited});
 
 			}  
-		});
-
-
-		/*mongo.connect(mongoURL, function(){
-			console.log('Connected to mongo at: ' + mongoURL);
-			var coll = mongo.collection('last_login');
-			coll.findOne({"user_id": req.session.user.user_id}, function(err, log_in){
-				if(log_in){
-
-					//update the time!
-
-					coll.update({"user_id" : req.session.user.user_id},{$set:{"last_visited" : Date()}}, function(err, results){
-						if (results) {
-							logger.log('info','updated last_loggedin time as');										
-						} else {
-							logger.log('info','could not update last visited time');
-						}
-					});
-
-					res.send({"time" : log_in.last_visited});
-				}
-			});	
-		});*/
+		});		
 	}
 	else{
 		res.send({"time" : null});
@@ -586,7 +564,27 @@ router.post('/item', function(req, res, next) {
 	var id = req.body.id;
 	console.log("id"+id);
 
-	mongo.connect(mongoURL, function(){
+	var msg_payload = { "item_id": id};
+	mq_client.make_request('item_queue',msg_payload, function(err,results){
+		
+		console.log(results);
+		if(err){
+			throw err;
+		}
+		else 
+		{
+			if(results.code == 200){
+				logger.log('info','selected item is found in items table!');
+				res.send({list : results.info});
+			}
+			else {  
+				
+				logger.log('info','no items found in items table!');
+			}
+		}  
+	});
+
+	/*mongo.connect(mongoURL, function(){
 		console.log('Connected to mongo at: ' + mongoURL);
 		var coll = mongo.collection('sell');
 
@@ -599,7 +597,7 @@ router.post('/item', function(req, res, next) {
 				logger.log('info','no items found in items table!');
 			}
 		});
-	});
+	});*/
 
 
 
