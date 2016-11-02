@@ -18,11 +18,13 @@ function handle_request(msg, callback){
 	
 	coll.findOne(msg, function(err,results){
 			if (results) {
-				logger.log('info','query for gettting user info is successful');
+				logger.log('info','user information retrival is successful');
+				res.info = results;
 				res.code = "200";
 			} else {
-				logger.log('info','query for gettting user info is failed');
-				res.code = "401";				
+				logger.log('info','user information query was failed');
+				res.code = "401";	
+				res.info = "null";			
 			}
 			callback(null, res);
 		});

@@ -109,29 +109,12 @@ router.post('/getuserinfo', function(req, res, next) {
 		{
 			if(results.code == 200){
 				logger.log('info','user information retrival is successful');
-				res.send({info : results});	
-			}
-			else {    				
+				res.send({info : results.info});	
+			} else {    				
 				logger.log('info','user information query was failed');
 			}
 		}  
 	});
-
-
-
-		/*mongo.connect(mongoURL, function(){
-			console.log('Connected to mongo at: ' + mongoURL);
-			var coll = mongo.collection('users');
-
-			coll.find({"user_id" : req.session.user.user_id}).toArray(function(err, results){
-				if (results.length > 0 ) {
-					logger.log('info','user information retrival is successful');
-					res.send({info : results});	
-				} else {
-					logger.log('info','user information query was failed');
-				}
-			});
-		});	*/
 
 	}else{
 		res.send({info : "redirect"});
@@ -636,10 +619,29 @@ router.post('/item', function(req, res, next) {
 
 router.post('/cataLouge', function(req, res, next) {
 	logger.log('info','inside /cataLouge post');
+
+
+	var msg_payload = {"seller_id":{$ne:req.session.user.user_id},"user" : req.session.user};
+	mq_client.make_request('catalouge_queue',msg_payload, function(err,results){
+		
+		if(err){
+			throw err;
+		}
+		else 
+		{
+			if(results.code == 200){
+				logger.log('info','cataLouge retrival was successful'); 
+				res.send({list : results.info});
+			}
+			else {    				
+				logger.log('info','cataLouge is empty');
+			}
+		}  
+	});
 		
 	// let's get sell items info from table sell into DB
 
-		mongo.connect(mongoURL, function(){
+		/*mongo.connect(mongoURL, function(){
 		console.log('Connected to mongo at: ' + mongoURL);
 		var coll = mongo.collection('sell');
 		
@@ -670,7 +672,7 @@ router.post('/cataLouge', function(req, res, next) {
 			}
 		});
 	}	
-	});
+	});*/
 });
 
 

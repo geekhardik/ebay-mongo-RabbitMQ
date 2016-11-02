@@ -55,11 +55,11 @@ app.controller('profile',function($scope,$http){
 						
 		}).success(function(data){
 			if (data.info) {
-				$scope.username = data.info[0].firstname;
-				$scope.handle = data.info[0].username;
-				$scope.contact = data.info[0].contact;
-				$scope.location = data.info[0].location;
-				$scope.date = data.info[0].time;
+				$scope.username = data.info.firstname;
+				$scope.handle = data.info.username;
+				$scope.contact = data.info.contact;
+				$scope.location = data.info.location;
+				$scope.date = data.info.time;
 				
 			}else{
 				alert("somthing's wrong in callback of profile.js");
