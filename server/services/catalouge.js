@@ -10,7 +10,9 @@ var logger = require('../logger/logger');
 function handle_request(msg, callback){
 	
 	var res = {};
+
 	logger.log('info','In handle request of catalouge');
+
 	
 	mongo.connect(mongoURL, function(){
 		console.log('Connected to mongo at: ' + mongoURL);
@@ -24,12 +26,14 @@ function handle_request(msg, callback){
 				// This way subsequent requests will know the user is logged in.
 				logger.log('info','cataLouge retrival was successful'); 
 				res.code = "200";
-				res.info = data;		
+				res.info = data;	
+				
 
 			} else {
 				logger.log('info','cataLouge is empty');
 				res.code = "401";
 			}
+			callback(null, res);
 		});
 	
 	
@@ -44,11 +48,14 @@ function handle_request(msg, callback){
 			} else {
 				logger.log('info','cataLouge is empty');
 				res.code = "401";
+				res.info = "null";
 			}
+			callback(null, res);
 			
 		});
 	}	
-	callback(null, res);
+	// console.log(res.info);
+	
 	});
 
 

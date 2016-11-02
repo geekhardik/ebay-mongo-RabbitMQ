@@ -637,42 +637,8 @@ router.post('/cataLouge', function(req, res, next) {
 				logger.log('info','cataLouge is empty');
 			}
 		}  
-	});
-		
-	// let's get sell items info from table sell into DB
-
-		/*mongo.connect(mongoURL, function(){
-		console.log('Connected to mongo at: ' + mongoURL);
-		var coll = mongo.collection('sell');
-		
-		if(req.session.user){
-
-		coll.find({"seller_id":{$ne:req.session.user.user_id}}).toArray(function(err, data){
-		
-			if (data.length >0) {
-				// This way subsequent requests will know the user is logged in.
-				logger.log('info','cataLouge retrival was successful'); 
-				res.send({list : data});		
-
-			} else {
-				logger.log('info','cataLouge is empty');
-			}
-		});
+	});	
 	
-	
-	}else{
-			coll.find({}).toArray(function(err, data){
-			if (data.length >0) {
-				// This way subsequent requests will know the user is logged in.
-				logger.log('info','cataLouge retrival was successful'); 
-				res.send({list : data});		
-
-			} else {
-				logger.log('info','cataLouge is empty');
-			}
-		});
-	}	
-	});*/
 });
 
 
