@@ -41,3 +41,55 @@ var msg_payload = { "username": username, "password": password };
 			}
 		}  
 	});
+
+
+	/*mongo.connect(mongoURL, function(){
+		console.log('Connected to mongo at: ' + mongoURL);
+		var coll = mongo.collection('cart');
+*/
+		/*coll.find({"cart_id":cart_item.item_id,"user_id": req.session.user.user_id}).toArray(function(err, results){
+			
+			console.log(results.length);
+			if (results.length > 0) {
+				logger.log('info','Selected Item exists in cart already!');
+				var current_qty = results[0].qty;
+				var new_qty = Number(qty) + Number(current_qty);
+				console.log('old qty'+current_qty);
+				console.log('new qty'+new_qty);		
+
+				var NEW_JSON_query = {
+							"cart_id" : cart_item.item_id,
+							"item" : cart_item.item,
+							"qty" : new_qty,
+							"user_id" : user,
+							"seller_name" : cart_item.seller,
+							"seller_id" : cart_item.seller_id,
+							"price" : cart_item.price
+						};
+
+				//update qty into existing item
+
+				coll.update({"cart_id":cart_item.item_id},NEW_JSON_query, function(err, results){
+				
+					if (results) {
+						logger.log('info','selected quantity was updated into cart');
+						res.send({success : 200});
+
+					} else {
+						logger.log('info','no items found in cart table!');
+					}
+					});
+
+			} else {
+				logger.log('info','no items found in cart table!');
+				
+				coll.insert(JSON_query, function(err, results){
+				
+					if (results) {
+						logger.log('info','selected quantity was updated into cart');
+						res.send({success : 200});
+
+					} else {
+						logger.log('info','no items found in cart table!');
+					}
+					}); */

@@ -8,6 +8,9 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var home = require('./routes/home');
 
+// var passport = require('passport');
+// require('./routes/passport')(passport);
+
 var routes = require('./routes/index');
 var users = require('./routes/users');
 var expressSession = require("express-session");
@@ -35,6 +38,9 @@ app.use(expressSession({
     url: mongoSessionConnectURL
   })
 }));
+
+// app.use(passport.initialize());
+
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));

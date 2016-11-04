@@ -10,6 +10,9 @@ var mongo = require("./mongo");
 var mongoURL = "mongodb://localhost:27017/ebay";
 var expressSession = require("express-session");
 
+// var passport = require('passport');
+// require('./routes/passport')(passport);
+
 
 const winston = require('winston');
 
@@ -333,7 +336,40 @@ router.post('/getCart', function(req, res, next) {
 	logger.log('info','inside /getCart post method!');
 	
 	//mongodb query
-	mongo.connect(mongoURL, function(){
+
+	var msg_payload = {"user_id" : req.session.user.user_id};
+	mq_client.make_request('getcart_queue',msg_payload, function(err,results){
+		
+		console.log(results);
+		if(err){
+			throw err;
+		}
+		else 
+		{
+			if(results.code == 200){
+				logger.log('info','getcart retrival is successful');
+				var data = {};
+				data = results.info;
+				var total_price = 0;
+				for(var i=0;i<data.length;i++){
+					total_price += (Number(data[i].price)*Number(data[i].qty));	
+					
+				}				
+				
+				JSON_obj = {
+						"cart" : data,
+						"price" : total_price
+				}
+				
+				res.send(JSON_obj);
+			}
+			else {    				
+				logger.log('info','getcart query was failed');
+			}
+		}  
+	});
+
+	/*mongo.connect(mongoURL, function(){
 		console.log('Connected to mongo at: ' + mongoURL);
 		var coll = mongo.collection('cart');
 
@@ -358,7 +394,7 @@ router.post('/getCart', function(req, res, next) {
 				logger.log('info','getcart query was failed');
 			}
 		});
-	});	
+	});	*/
 });
 
 
@@ -433,120 +469,29 @@ router.post('/cart', function(req, res, next) {
 							"price" : cart_item.price
 						};
 	
-	console.log(JSON_query);
+	// console.log(JSON_query);
 
 	if(req.session.user){			
-				
-		mongo.connect(mongoURL, function(){
-		console.log('Connected to mongo at: ' + mongoURL);
-		var coll = mongo.collection('cart');
 
-		coll.find({"cart_id":cart_item.item_id,"user_id": req.session.user.user_id}).toArray(function(err, results){
-			
-			console.log(results.length);
-			if (results.length > 0) {
-				logger.log('info','Selected Item exists in cart already!');
-				var current_qty = results[0].qty;
-				var new_qty = Number(qty) + Number(current_qty);
-				console.log('old qty'+current_qty);
-				console.log('new qty'+new_qty);		
-
-				var NEW_JSON_query = {
-							"cart_id" : cart_item.item_id,
-							"item" : cart_item.item,
-							"qty" : new_qty,
-							"user_id" : user,
-							"seller_name" : cart_item.seller,
-							"seller_id" : cart_item.seller_id,
-							"price" : cart_item.price
-						};
-
-				//update qty into existing item
-
-				coll.update({"cart_id":cart_item.item_id},NEW_JSON_query, function(err, results){
-				
-					if (results) {
-						logger.log('info','selected quantity was updated into cart');
-						res.send({success : 200});
-
-					} else {
-						logger.log('info','no items found in cart table!');
-					}
-					});
-
-			} else {
-				logger.log('info','no items found in cart table!');
-				
-				coll.insert(JSON_query, function(err, results){
-				
-					if (results) {
-						logger.log('info','selected quantity was updated into cart');
-						res.send({success : 200});
-
-					} else {
-						logger.log('info','no items found in cart table!');
-					}
-					});
-			}
-		});
-	});
-
-
-
-		/*var query = "select * from cart where cart.id = '"+cart_item.item_id+"' and cart.user_id = '"+req.session.user.user_id+"'";
+		mq_client.make_request('cart_queue',JSON_query, function(err,results){
 		
-		mysql.fetchData(function(err, results) {
-			if (err) {
-				throw err;
-			} else {
-				
-				if (results.length > 0) {
-
-					logger.log('info','Selected Item exists in cart already!');
-					var current_qty = results[0].qty;
-					var new_qty = qty + current_qty;
-					var query = "update cart SET cart.qty ='"+ new_qty+"' where cart.id = '"+cart_item.item_id+"'";
-					
-					mysql.fetchData(function(err, answer) {
-						if (err) {
-							throw err;
-						} else {
-							if (answer.length == null) {
-								logger.log('info','selected quantity was updated into cart');
-								res.send({success : 200});		
-							}else{
-								console.log("no records!");
-							} 
-						}
-					}, query); 			
-			
-				} else {
-					console.log("no entries found in DB!");
-					var query = "INSERT INTO cart SET ?	";
-					
-					var JSON_query = {
-							"id" : cart_item.item_id,
-							"item" : cart_item.item,
-							"qty" : qty,
-							"user_id" : user,
-							"seller_name" : cart_item.seller,
-							"seller_id" : cart_item.seller_id
-						};
-					
-					mysql.fetchData(function(err, results) {
-						if (err) {
-							throw err;
-						} else {
-							if (results.affectedRows === 1) {
-								logger.log('info','selected quantity was added into cart');	
-								res.send({success : 200});
-							} 
-						}
-					}, query,JSON_query); 
-				}
+		console.log(results);
+		if(err){
+			throw err;
+		}
+		else 
+		{
+			if(results.code == 200){
+				logger.log('info',res.info);
+				res.send({success : 200});
 			}
-		}, query); 		*/
-		
+			else {    
+				
+				logger.log('info',res.info);
+				res.send({success : 401});
+			}
+		}  
+	});		
 							
 	} else{		
 		res.send({success : 401});
@@ -583,23 +528,6 @@ router.post('/item', function(req, res, next) {
 			}
 		}  
 	});
-
-	/*mongo.connect(mongoURL, function(){
-		console.log('Connected to mongo at: ' + mongoURL);
-		var coll = mongo.collection('sell');
-
-		coll.find({"item_id":id}).toArray(function(err, data){
-			if (data) {
-				// This way subsequent requests will know the user is logged in.
-				res.send({list : data});
-
-			} else {
-				logger.log('info','no items found in items table!');
-			}
-		});
-	});*/
-
-
 
 	/*var query = "select * from sell where item_id=?";
 	mysql.fetchData(function(err, results) {
@@ -692,8 +620,7 @@ router.post('/afterSignIn', function(req, res, next) {
 	logger.log('info','inside /afterSignIn post');
 	var username = req.body.inputUsername;
 	var password = req.body.inputPassword;
-
-
+	
 	//Query to MongoDB
 	//get details of user from database! 
 	var msg_payload = { "username": username, "password": password };

@@ -11,22 +11,22 @@ function handle_request(msg, callback){
 	
 	var res = {};
 
-	logger.log('info','In handle request of item');
+	logger.log('info','In handle request of getcart');
 
 	
 	mongo.connect(mongoURL, function(){
 	console.log('Connected to mongo at: ' + mongoURL);
-	var coll = mongo.collection('sell');
-	console.log('here');	
-		coll.find({"item_id":msg.item_id}).toArray(function(err, data){
+	var coll = mongo.collection('cart');
+	
+		coll.find({"user_id" : msg.user_id}).toArray(function(err, data){
 		
 			if (data) {
 				// This way subsequent requests will know the user is logged in.
-				logger.log('info','selected item is found in items table!');
+				logger.log('info','getcart retrival is successful');
 				res.code = "200";
 				res.info = data;
 			} else {
-				logger.log('info','no items found in items table!');
+				logger.log('info','getcart query was failed');
 				res.code = "401";
 			}
 			callback(null, res);
