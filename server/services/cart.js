@@ -72,25 +72,7 @@ function handle_request(msg, callback){
 					callback(null, res);
 					});
 			}
-		});
-
-	
-
-
-
-		coll.find({"user_id" : msg.user_id}).toArray(function(err, data){
-		
-			if (data) {
-				// This way subsequent requests will know the user is logged in.
-				logger.log('info','getcart retrival is successful');
-				res.code = "200";
-				res.info = data;
-			} else {
-				logger.log('info','getcart query was failed');
-				res.code = "401";
-			}
-			callback(null, res);
-		});	
+		});		
 		
 	});
 

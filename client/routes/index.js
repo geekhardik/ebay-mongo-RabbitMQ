@@ -47,30 +47,25 @@ router.post('/getbought', function(req, res, next) {
 	logger.log('info','inside getbought page post method!');
 	
 
-		mongo.connect(mongoURL, function(){
-		console.log('Connected to mongo at: ' + mongoURL);
-		var coll = mongo.collection('order_details');
-
-		coll.find({"user_id" : req.session.user.user_id}).toArray(function(err, results){
-			if (results.length > 0 ) {
+	var msg_payload = { "user_id": req.session.user.user_id };
+	mq_client.make_request('getbought_queue',msg_payload, function(err,results){
+		
+		console.log(results);
+		if(err){
+			throw err;
+		}
+		else 
+		{
+			if(results.code == 200){
 				logger.log('info','purchase history retrival is successful');
+				res.send({bought : results.info});
+			}
+			else {    
 				
-				/*var total_price = 0;
-				for(var i=0;i<results.length;i++){
-					total_price += (Number(results[i].price)*Number(results[i].qty));						
-				}								
-				JSON_obj = {
-						"cart" : results,
-						"price" : total_price
-				}				
-				res.send(JSON_obj);	*/	
-				res.send({bought : results});
-			} else {
 				logger.log('info','bought history query was failed');
 			}
-		});
-	});		
-	
+		}  
+	});	
 });
 
 
@@ -78,25 +73,29 @@ router.post('/delet_cartitem', function(req, res, next) {
 	logger.log('info','inside /delet_cartitem page post method!');
 	
 	var del_obj = req.body.obj;
-	console.log(req.body.obj);
+	// console.log(req.body.obj);
 	
 
-	mongo.connect(mongoURL, function(){
-	console.log('Connected to mongo at: ' + mongoURL);
-	var coll = mongo.collection('cart');
-	coll.remove({"user_id":req.session.user.user_id , "item":del_obj.item}, function(err, results){
-			if (results) {
-				// This way subsequent requests will know the user is logged in.
-				logger.log('info','Item deletion was successful');											
-				res.send({success : 200});	
-
-			} else {
+	var msg_payload = {"user_id":req.session.user.user_id , "item":del_obj.item};
+	mq_client.make_request('delete_cart_item_queue',msg_payload, function(err,results){
+		
+		console.log(results);
+		if(err){
+			throw err;
+		}
+		else 
+		{
+			if(results.code == 200){
+				logger.log('info','Item deletion was successful');
+				res.send({success : 200});
+			}
+			else {    
 				logger.log('info','Item deletion was failed');
 				res.send({success : 401});
 			}
-		});
-	});
-	
+		}  
+	});	
+		
 });
 
 router.post('/getuserinfo', function(req, res, next) {
@@ -129,20 +128,24 @@ router.post('/getSold', function(req, res, next) {
 	logger.log('info','inside getSold page post method!');
 	
 
-		mongo.connect(mongoURL, function(){
-		console.log('Connected to mongo at: ' + mongoURL);
-		var coll = mongo.collection('sell');
-
-		coll.find({"seller_id" : req.session.user.user_id}).toArray(function(err, results){
-			if (results.length > 0 ) {
-				logger.log('info','selling history retrival is successful');
-				
-				res.send({sold : results});	
-			} else {
+	var msg_payload = { "seller_id": req.session.user.user_id };
+	mq_client.make_request('getsold_queue',msg_payload, function(err,results){
+		
+		console.log(results);
+		if(err){
+			throw err;
+		}
+		else 
+		{
+			if(results.code == 200){
+				logger.log('info','selling history retrival is successful');				
+				res.send({sold : results.info});	
+			}
+			else {    				
 				logger.log('info','selling history query was failed');
 			}
-		});
-	});	
+		}  
+	});			
 });
 
 
@@ -172,6 +175,7 @@ router.post('/boughtPage', function(req, res, next) {
 	
 	var checkout_cart = [];
 	checkout_cart = req.body.cart;
+	console.log(checkout_cart);
 	var cart_total = req.body.total;
 	
 	
@@ -184,84 +188,33 @@ router.post('/boughtPage', function(req, res, next) {
 	}
 	console.log("size"+size);
 	check.Tocheck(cc,exp_month, exp_year,cvv,function(answer,message){
-			logger.log('info','credit card validation is successful!');
+		logger.log('info','credit card validation is successful!');	
+	
 			
 		if(answer){	
-			var transection_id = uuid.v1();
-			console.log("CC check is OK");
-
-
-			mongo.connect(mongoURL, function(){
-			console.log('Connected to mongo at: ' + mongoURL);
-			//delete the user cart!
-			var coll = mongo.collection('cart');
-			coll.remove({"user_id": req.session.user.user_id}, function(err, results){
-				if (results) {
-					// This way subsequent requests will know the user is logged in.
-					logger.log('info','deleted entries from cart database');
-
-				} else{
-					logger.log('info','entries could not be deleted from cart database after checkout!');
-				}
-			});
-			
-						
-			//insert detailed item lists into order_details table
-			
-			for (var i in checkout_cart){
-			
-				// var query = "INSERT INTO order_details SET ?";
+		
+		mq_client.make_request('checkout_queue',checkout_cart, function(err,results){
+		
+		console.log(results);
+		if(err){
+			throw err;
+		}
+		else 
+		{
+			if(results.code == 200){
+				logger.log('info','checkout operation was successful');
+				res.send({"message" : 200});
+			}
+			else {    
 				
-				var JSON_query = {
-						"seller_id" : checkout_cart[i].seller_id,
-						"item" : checkout_cart[i].item,	
-						"transection_id" : transection_id,
-						"qty" : checkout_cart[i].qty,
-						"item_id" : checkout_cart[i].cart_id,
-						"user_id" : req.session.user.user_id,
-						"price" : checkout_cart[i].price,
-						"time" : Date()
-				};
-
-				// console.log("round:"+i+" - "+JSON_query);
-				
-				var coll = mongo.collection('order_details');
-
-				coll.insert(JSON_query, function(err, results){
-					if (results) {
-					// This way subsequent requests will know the user is logged in.
-					logger.log('info','inserted items into bought_detail for round'+i+' database');
-					// console.log("i : "+i+" "+count);
-					
-					//update qty in sell table
-					new_qty = checkout_cart[count].qty;
-					item_id = checkout_cart[count++].cart_id;
-
-					
-					var coll = mongo.collection('sell');
-
-
-					//update items in sell table
-					coll.update({ "item_id": item_id},{ $inc: { "qty": -new_qty} }, function(err, results){
-						if (results) {
-							// This way subsequent requests will know the user is logged in.
-							logger.log('info','items are updated from sell database');													
-
-						} else {
-							logger.log('info','counld not update records from sell table!');
-						}
-					});
-					} else {
-							logger.log('info','counld not insert records into order_details collection!');
-							json_responses = {"statusCode" : 401};
-							res.send(json_responses);
-						}
-			});
-		};
-
-	});			
-			res.send({"message" : 200});
-		}else{
+				logger.log('info','checkout operation was not successful');
+				json_responses = {"statusCode" : 401};
+				res.send(json_responses);
+			}
+		}  
+	});	
+			
+	}else{
 			logger.log('error','credit card details were incorrect!');
 			res.send({"message" : message});
 		}
@@ -352,8 +305,7 @@ router.post('/getCart', function(req, res, next) {
 				data = results.info;
 				var total_price = 0;
 				for(var i=0;i<data.length;i++){
-					total_price += (Number(data[i].price)*Number(data[i].qty));	
-					
+					total_price += (Number(data[i].price)*Number(data[i].qty));						
 				}				
 				
 				JSON_obj = {
@@ -368,33 +320,7 @@ router.post('/getCart', function(req, res, next) {
 			}
 		}  
 	});
-
-	/*mongo.connect(mongoURL, function(){
-		console.log('Connected to mongo at: ' + mongoURL);
-		var coll = mongo.collection('cart');
-
-		coll.find({"user_id" : req.session.user.user_id}).toArray(function(err, results){
-			if (results.length > 0 ) {
-				logger.log('info','getcart retrival is successful');
-				
-				var total_price = 0;
-				for(var i=0;i<results.length;i++){
-					total_price += (Number(results[i].price)*Number(results[i].qty));	
-					
-				}				
-				
-				JSON_obj = {
-						"cart" : results,
-						"price" : total_price
-				}
-				
-				res.send(JSON_obj);							
-
-			} else {
-				logger.log('info','getcart query was failed');
-			}
-		});
-	});	*/
+	
 });
 
 
@@ -417,29 +343,27 @@ router.post('/bid', function(req, res, next) {
 					"item" : bid_item.item,
 					"price" : bid,
 					"item_id" : bid_item.item_id
-				};
+			};
 			
-			mongo.connect(mongoURL, function(){
-			console.log('Connected to mongo at: ' + mongoURL);
-			var coll = mongo.collection('bids');
-
-			coll.insert(JSON_query, function(err, results){
-				if (err) {
-				throw err;
-			} else {
-				if (results) {
-					logger.log('info', 'bid inserted into bid table');	
-						res.send({success : 200});
-				
-				} else {
-					logger.log('info','bids couldn not be inserted in bids table');
-					res.send({success : 401});				
-				}
+		mq_client.make_request('bid_queue',JSON_query, function(err,results){
+		
+		console.log(results);
+		if(err){
+			throw err;
+		}
+		else 
+		{
+			if(results.code == 200){
+				logger.log('info', 'bid inserted into bid table');	
+				res.send({success : 200});
 			}
+			else {    				
+				logger.log('info','bids couldn not be inserted in bids table');
+				res.send({success : 401});	
+			}
+		}  
+	});	
 			
-			});
-		});
-
 	}else {
 		res.send({success : 401});
 	}			
