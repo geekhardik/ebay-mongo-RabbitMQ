@@ -27,3 +27,7 @@ exports.collection = function(name){
     return db.collection(name);
   
 };
+
+exports.connectToCollection = function(name, connection) {
+    return connection.collection(name);
+};

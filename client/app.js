@@ -8,17 +8,18 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var home = require('./routes/home');
 
-// var passport = require('passport');
-// require('./routes/passport')(passport);
+var passport = require('passport');
+require('./routes/passport')(passport);
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
+var mongoSessionConnectURL = "mongodb://localhost:27017/this";
 var expressSession = require("express-session");
 var mongoStore = require("connect-mongo")(expressSession);
 var mongo = require("./routes/mongo");
 
 
-var mongoSessionConnectURL = "mongodb://localhost:27017/user";
+
 var app = express();
 
 // view engine setup
@@ -39,7 +40,7 @@ app.use(expressSession({
   })
 }));
 
-// app.use(passport.initialize());
+app.use(passport.initialize());
 
 app.use(logger('dev'));
 app.use(bodyParser.json());

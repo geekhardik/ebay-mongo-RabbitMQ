@@ -4,6 +4,10 @@ var mysql = require('./mysql');
 var ejs = require("ejs");
 var check = require('./cc_check');
 
+var passport = require("passport");
+var LocalStrategy = require("passport-local").Strategy;
+
+
 var uuid = require('node-uuid');
 var crypto = require('crypto');
 var mongo = require("./mongo");
@@ -542,38 +546,40 @@ router.post('/logout', function(req, res, next) {
 
 router.post('/afterSignIn', function(req, res, next) {
 	logger.log('info','inside /afterSignIn post');
-	var username = req.body.inputUsername;
-	var password = req.body.inputPassword;
-	
-	//Query to MongoDB
-	//get details of user from database! 
-	var msg_payload = { "username": username, "password": password };
-	mq_client.make_request('login_queue',msg_payload, function(err,results){
-		
-		console.log(results);
-		if(err){
-			throw err;
-		}
-		else 
-		{
-			if(results.code == 200){
-				console.log("valid Login");
-				res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
-				req.session.user = {
-					"user_id" : results.user_id,
-					"username" : username
-				};
-				console.log(req.session.user);
-				res.send({"statusCode" : 200});
-			}
-			else {    
-				
-				logger.log('info','signin was failed');
-				res.send({"statusCode" : 401});
-			}
-		}  
-	});
-		
+	var username = req.body.username;
+	var password = req.body.password;
+
+
+	passport.authenticate('login', function(err, user, info) {
+    console.log("here");
+    // console.log(user);
+    if(err) {
+      return next(err);
+    }
+
+    if(!user) {
+    	console.log("inside this one!");
+      return res.send({"statusCode" : 401});
+    }
+
+    if(user.code == 401){
+    	console.log("inside 401");
+    	return res.send({"statusCode" : 401});
+    }
+
+    req.logIn(user, {session:false}, function(err) {
+      if(err) {
+        return next(err);
+      }
+
+      req.session.user = {
+                              "user_id" : user.user_id,
+                              "username" : username
+       				 }; 
+      console.log("session initilized");
+      res.send({"statusCode" : 200}); 
+    })
+	})(req, res, next);		
 });
 
 router.get('/sell', function(req, res, next) {

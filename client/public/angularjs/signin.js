@@ -15,13 +15,13 @@ app.controller('signinCtrl',function($scope,$http){
 			method: "POST",
 			url : '/afterSignIn',
 			data : {
-				"inputUsername" : $scope.username,
-				"inputPassword" : $scope.password
+				"username" : $scope.username,
+				"password" : $scope.password
 			}
 					
 		}).success(function(data){
 			if (data.statusCode == 401) {
-				alert("somthing's wrong in callback of signin.js");
+				alert("username or password is incorrect!");
 				window.location.assign("/signin");
 			}
 			else{
