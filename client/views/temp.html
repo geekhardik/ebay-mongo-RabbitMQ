@@ -4,44 +4,74 @@
   <title>eBay</title>
   <meta charset="utf-8">
   
-  	<link rel='stylesheet' href='/stylesheets/style.css' />  
-    <script	src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
-    <script src="angularjs/item.js"></script> 
+    <link rel='stylesheet' href='/stylesheets/style.css' />  
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-animate.js"></script>
+    <script src="angularjs/home.js"></script> 
     
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-  <link rel='stylesheet' href='/stylesheets/item.css' /> 
+  <link rel='stylesheet' href='/stylesheets/home.css' /> 
   
 </head>
 
-<script>
-         
-         function getdetails(sParam) {
-          var sPageURL = window.location.search.substring(1);
-          var sURLVariables = sPageURL.split('&');
-          for (var i = 0; i < sURLVariables.length; i++) 
-          {
-              var sParameterName = sURLVariables[i].split('=');
-              if (sParameterName[0] == sParam) 
-              {
-                  return sParameterName[1];
-              }
-          }
-      }
-     
-         var id = getdetails('id'); 
-           
- </script>
+<body ng-app="myApp" ng-controller="home" class="container-fluid" style="padding:0px;">
+<div  class="main" style="" >
+<nav class="navbar">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <img src="images/ebay.png" class="img-rounded" alt="ebay" width="80" height="50">
+    </div>
+    <div class="collapse navbar-collapse" id="myNavbar">
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="/home">Home</a></li>
+        <li class="dropdown">
+          <a class="dropdown-toggle" data-toggle="dropdown" href="/profile">{{username}}<span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a href="/profile">Profile</a></li>
+            <li><a href="/profile">Buy/Sell details</a></li>
+          </ul>
+        </li>
+        <li><a href="/cart">cart</a></li>
+        <li><a href="/sell">Sell</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><span  class="btn" ng-click="signcheck()">{{sign}}</span></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+</div>
 
-<body ng-app="myApp" ng-controller="item" class="container-fluid" ng-init="getitem(id)">
+  
+<div class="container">
 
-<h1>hi</h1>
+  <div class=" box alert alert-danger" ng-hide="time">
+            <strong style="color: green">Your last Logged-in time : {{login_time}}</strong>
+  </div>
+  <h1>Hi {{username}}! Welcome to eBay homepage..</h1>
+ </div>
 
 
-<h1>{{item}}</h1>
-<h2> Price : {{price | currency}}</h2>
+<div class = "page" ng-controller="cataLouge" style="margin:20px;">
+    <div class="row">         
+          <div class="col-lg-4" ng-repeat="x in list" style="border:1px solid">
+            
+            <h1><a href="/item?id={{x.item_id}}" >{{x.item}}</a></h1>           
+            <a href="/item?id={{x.item_id}}"><img src="images/watch.jpg" class="img-rounded" alt="watch" width="304" height="236"></a>
+            <h2 class="text-center">Item price : {{x.price | currency}}</h2>
+                    
+          </div>          
+    </div>  
+</div>  
+
 
 </body>
 </html>
