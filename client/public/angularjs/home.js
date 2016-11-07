@@ -1,6 +1,26 @@
 
 var app = angular.module('myApp',['ngAnimate']);
 
+var list=[];
+
+app.controller('cataLouge',function($scope,$http){
+	//check catalouge from server
+	$http({			
+		method: "POST",
+		url : '/catalouge',
+					
+	}).success(function(data){
+		if(data.list.length){
+			$scope.list= data.list;
+			
+		}else{
+			alert("somthing's wrong in callback of catalouge.js");
+		}
+	});
+	
+
+});
+
 app.controller('home',function($scope,$http,$timeout){
 
 	$scope.time = true;
@@ -35,7 +55,8 @@ app.controller('home',function($scope,$http,$timeout){
 			$timeout(function () { $scope.time = true; }, 5000);
 			// alert("you have last visited to eBay : "+time.toLocaleString());		
 		}else{
-			alert("somthing's wrong in getting last_login time from system");
+			console.log("it's null");
+			$scope.time = true;
 		}
 	});	
 	
@@ -69,25 +90,7 @@ $scope.signcheck = function(){
 
 //for catalouge display
 
-var list=[];
 
-app.controller('cataLouge',function($scope,$http){
-	//check catalouge from server
-	$http({			
-		method: "POST",
-		url : '/catalouge',
-					
-	}).success(function(data){
-		if(data.list.length){
-			$scope.list= data.list;
-			
-		}else{
-			alert("somthing's wrong in callback of catalouge.js");
-		}
-	});
-	
-
-});
 
 
 

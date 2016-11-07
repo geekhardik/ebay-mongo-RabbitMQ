@@ -85,3 +85,133 @@ module.exports = function(passport) {
     }));
 }
 
+
+
+
+
+if(msg.price_option == "auction"){
+					logger.log('info','item catogory is auction!');
+					
+					var millisec_time = 120000;				//for 4 days!	
+					
+					setTimeout(function () {
+						logger.log('info','Bid is expired and now automatic function will perfrom the task to announce winner!'); 
+
+    				
+    				//get the highest bidder 
+
+    				var query = "SELECT * from ebay.bids where price = (SELECT MAX(price) FROM ebay.bids)";
+    				var winner;
+    				var item_id;
+						
+						mysql.fetchData(function(err, results) {
+							if (err) {
+								throw err;
+							} else {
+								if (results.length > 0) {
+									logger.log('info','selected highest bidder from bids databases');
+									console.log(results);
+									var winner = results[0].user_id;
+									var item_id = results[0].item_id;
+									console.log(winner);	
+									console.log(item_id);
+
+			    					var transection_id = uuid.v1();
+			    					//update transection table
+
+			    					var query = "INSERT INTO transection SET ?";
+						
+									var JSON_query = {
+											"total" : req.body.price,
+											"user_id" : winner ,	
+											"id" : transection_id
+									};
+									
+									mysql.fetchData(function(err, results) {
+										if (err) {
+											throw err;
+										} else {
+											if (results.affectedRows === 1) {
+												logger.log('info','winner of bid transection table is updated');	
+												
+												//update order_details table
+
+												var query = "INSERT INTO order_details SET ?";
+												
+												var JSON_query = {
+														"seller_id" : req.session.user.user_id,
+														"item" : req.body.item,	
+														"transection_id" : transection_id,
+														"qty" : 1					
+												};
+												
+												mysql.fetchData(function(err, results) {
+													if (err) {
+														throw err;
+													} else {
+														if (results.affectedRows === 1) {
+															
+															logger.log('info','inserted items into order_details database');				
+															
+															//update qty in sell table
+															
+															var query = "delete from sell where item_id = '"+item_id+"' AND price_option = 'auction' AND seller_id = '"+req.session.user.user_id+"'";
+															
+															mysql.fetchData(function(err, results) {
+																if (err) {
+																	throw err;
+																} else {
+																	if (results.affectedRows === 1) {							
+																		logger.log('info','deleted items from sell database');									
+																			
+																		//update bids qty as well!..
+
+																		var query = "delete from bids where item_id = '"+item_id+"'";
+																					
+																					mysql.fetchData(function(err, results) {
+																						if (err) {
+																							throw err;
+																						} else {
+																							if (results.length > 0) {							
+																								logger.log('info','deleted items from bids database');									
+																																		
+																							} else{
+																								logger.log('info','counld not delete records from sell table!');
+																							}
+																						}
+																					}, query); 
+																	} else{
+																		logger.log('info','counld not delete records from sell table!');
+																	}
+																}
+															}, query); 
+														} 
+													}
+												}, query,JSON_query); 	
+											}else{
+												logger.log('info','No bidders for this item!');
+											} 
+										}
+									}, query,JSON_query); 												
+											} 
+										}
+									}, query,JSON_query); 					
+
+					}, millisec_time)}; 
+				
+				
+				var json_responses = {
+					"statusCode" : 200
+				};
+				res.send(json_responses);
+			} else {
+				logger.log('info','items could not be inserted in sell table');
+				 json_responses = {
+					"statusCode" : 401
+				};
+				res.send(json_responses);
+			}
+		}
+	}, query_string, JSON_query);
+	
+	})}; */

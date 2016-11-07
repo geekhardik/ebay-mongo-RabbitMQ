@@ -497,8 +497,11 @@ router.post('/item', function(req, res, next) {
 router.post('/cataLouge', function(req, res, next) {
 	logger.log('info','inside /cataLouge post');
 
-
-	var msg_payload = {"seller_id":{$ne:req.session.user.user_id},"user" : req.session.user};
+	if(req.session.user){
+		var msg_payload = {"seller_id":{$ne:req.session.user.user_id},"user" : req.session.user};
+	}else{
+		var msg_payload = {};
+	}
 	mq_client.make_request('catalouge_queue',msg_payload, function(err,results){
 		
 		if(err){

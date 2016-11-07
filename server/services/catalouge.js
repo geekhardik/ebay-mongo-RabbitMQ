@@ -17,7 +17,7 @@ function handle_request(msg, callback){
 	mongo.connect(mongoURL, function(){
 		console.log('Connected to mongo at: ' + mongoURL);
 		var coll = mongo.collection('sell');
-		
+		console.log(msg.user);
 		if(msg.user){
 
 		coll.find({"seller_id":{$ne:msg.user.user_id}}).toArray(function(err, data){
@@ -38,6 +38,7 @@ function handle_request(msg, callback){
 	
 	
 	}else{
+			console.log("we have reached!");
 			coll.find({}).toArray(function(err, data){
 			if (data.length >0) {
 				// This way subsequent requests will know the user is logged in.
