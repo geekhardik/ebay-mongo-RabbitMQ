@@ -10,8 +10,7 @@ app.controller('cart',function($scope,$http){
 	}).success(function(data){
 		if(data.cart){
 			$scope.cart_check = data.cart;
-			$scope.price = data.price;	
-			
+			$scope.price = data.price;			
 		
 		}else{
 			alert("somthing's wrong in callback of cart.js");
@@ -26,7 +25,7 @@ app.controller('cart',function($scope,$http){
 		method: "POST",
 		url : '/delet_cartitem',
 		data :{
-			"obj" : x,
+			"obj" : x
 		}
 	}).success(function(data){
 		if(data.success == "200"){

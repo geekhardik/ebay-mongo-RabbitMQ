@@ -6,14 +6,14 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var home = require('./routes/home');
+// var home = require('./routes/home');
 
 var passport = require('passport');
 require('./routes/passport')(passport);
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
-var mongoSessionConnectURL = "mongodb://localhost:27017/this";
+var mongoSessionConnectURL = "mongodb://localhost:27017/ebay";
 var expressSession = require("express-session");
 var mongoStore = require("connect-mongo")(expressSession);
 var mongo = require("./routes/mongo");
@@ -50,15 +50,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
 app.use('/users', users);
-
-
-
-//copied area
-//app.get('/signin', home.signin);
-//app.post('/signup',home.signup);
-//app.post('/afterSignIn', home.afterSignIn);
-app.get('/getAllUsers', home.getAllUsers);
-//till here
 
 
 // catch 404 and forward to error handler

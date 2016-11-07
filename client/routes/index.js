@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-var mysql = require('./mysql');
+// var mysql = require('./mysql');
 var ejs = require("ejs");
 var check = require('./cc_check');
 
@@ -567,7 +567,7 @@ router.post('/afterSignIn', function(req, res, next) {
 
     if(user.code == 401){
     	console.log("inside 401");
-    	return res.send({"statusCode" : 401});
+    	res.send({"statusCode" : 401});
     }
 
     req.logIn(user, {session:false}, function(err) {

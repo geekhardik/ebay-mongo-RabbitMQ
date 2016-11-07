@@ -22,7 +22,7 @@ app.controller('signupCtrl',function($scope,$http){
 					
 		}).success(function(data){
 			if (data.statusCode == 401) {
-				alert("Something's wrong in signup!");
+				alert("Please enter the correct details in form!");
 				window.location.assign("/signup");
 			}else if(data.statusCode == 10){
 				console.log("invalid");
@@ -31,6 +31,7 @@ app.controller('signupCtrl',function($scope,$http){
 			else{
 				
 				alert("You are successfully signed up! Please sign-in now!...");
+				
 				window.location.assign("/signin");
 			}
 			

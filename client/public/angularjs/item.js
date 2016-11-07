@@ -90,7 +90,12 @@ app.controller('item',function($scope,$http,$window){
 	
 	$scope.bid = function(x){	
 		
-		
+		var a = Number($scope.bid_amount);
+		var b = Number(x.price);
+		if(a < b){
+			alert("Plese enter price more than the listed bidding price!");
+			
+		}else{	
 				
 		
 			$http({			
@@ -114,6 +119,7 @@ app.controller('item',function($scope,$http,$window){
 					
 				}
 			});
+			}
 		}
 	
 	
